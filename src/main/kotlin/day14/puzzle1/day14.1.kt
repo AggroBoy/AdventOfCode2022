@@ -23,7 +23,7 @@ private var yBound = 0
 
 private fun loadWorld(filename: String) {
     File(filename).readLines().forEach {
-        val coords = ArrayDeque(it.split(Regex(" -> ")).map{ it.toCoordinate()  })
+        val coords = ArrayDeque(it.split(Regex(" -> ")).map{ it.toCoordinate() })
 
         var position = coords.removeFirst()
         while (coords.isNotEmpty()) {
