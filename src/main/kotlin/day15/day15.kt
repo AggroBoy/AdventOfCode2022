@@ -13,6 +13,16 @@ private data class Coordinate(
 ) {
     fun distanceFrom(other: Coordinate): Int =
         abs(x - other.x) + abs(y - other.y)
+
+    fun lineTo(other: Coordinate): List<Coordinate> {
+        // Hacky - only works for precisely diagonal lines, but that's all that's needed
+        val distance = abs(x - other.x)
+        val xStep = if (other.x > x) 1 else -1
+        val yStep = if (other.y > y) 1 else -1
+        return (0..distance).map {
+            Coordinate(x + (it * xStep), y + (it * yStep))
+        }
+    }
 }
 
 private data class Sensor(
@@ -49,7 +59,34 @@ private fun puzzle1(fileName: String, row: Int): Int {
     return impossible
 }
 
-private fun puzzle2(): Int {
+private fun puzzle2(fileName: String): Long {
+    val sensors = parseInput(fileName)
+
+    for (sensor in sensors) {
+        val left = Coordinate(sensor.position.x - sensor.distanceToClosestBeacon - 1, sensor.position.y)
+        val top = Coordinate(sensor.position.x, sensor.position.y - sensor.distanceToClosestBeacon - 1)
+        val right = Coordinate(sensor.position.x + sensor.distanceToClosestBeacon + 1, sensor.position.y)
+        val bottom = Coordinate(sensor.position.x, sensor.position.y + sensor.distanceToClosestBeacon + 1)
+
+
+        val toConsider = listOf(
+            left.lineTo(top),
+            top.lineTo(right),
+            right.lineTo(bottom),
+            bottom.lineTo(left),
+        )
+            .flatten()
+            .filter {
+                it.x >= 0 && it.x <= 4000000 && it.y >= 0 && it.y <= 4000000
+            }
+
+        for (position in toConsider) {
+            if ( sensors.none { it.position.distanceFrom(position) <= it.distanceToClosestBeacon } ) {
+                return (position.x.toLong() * 4000000L) + position.y.toLong()
+            }
+        }
+    }
+
     return 0
 }
 
@@ -57,5 +94,5 @@ private fun puzzle2(): Int {
 fun main(args: Array<String>) {
     println("Puzzle 1 (test): ${puzzle1("input/day15-test.txt", 10)}")
     println("Puzzle 1: ${puzzle1("input/day15.txt", 2000000)}")
-    println("Puzzle 2: ${puzzle2()}")
+    println("Puzzle 2: ${puzzle2("input/day15.txt")}")
 }
